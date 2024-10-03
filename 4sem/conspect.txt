@@ -1,0 +1,43 @@
+C - ANSI
+stdio.h
+printf, scnf, getchar, ...
+FILE* - opaque
+file stream / stdio stream
+stdin, stdout, stderr
+fopen C path
+f = fopen(path, mode)
+fread, fwrite, printf, fscanf...
+--------------------------------
+1. line - построчная буфферизация (\n)!
+2. block - 4кб, 16кб (полное заполнение буфера)
+3. нет буферизации
+--------------------------------
+fclose(f)
+
+syscalls
+FILE* => int fd (file descriptor)
+0 stdin
+1 stdout
+2 stderr
+3 fd
+4 ...
+
+ssize_t write/read (int fd, void* buffer, size_t size)
+return < 0 - error
+return > 0 - ok (size of read data)
+return = 0 - no read data (eof)
+int errno (<errno.h>)
+ENOMEM - error no memory (const)
+if (fd < 0)
+	perror("write failed"); : сообщение\n //stderr
+	return exit;
+while (writen < size) {
+	... // mywrite
+}
+
+int open(const char * path, int flags, int mode)
+flags O_READ, O_WRITE, O_RDWR, O_APPEND, O_TRUNC, O_CREAT
+
+int close(int fd)
+
+kiskara@gmail.com

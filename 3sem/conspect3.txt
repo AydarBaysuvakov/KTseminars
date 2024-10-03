@@ -1,0 +1,16 @@
+1.
+process - context
+user - variable
+system - os
+cpu - register
+	|
+	\/ copy( fork() )
+2.
+user
+system   --> PID2
+cpu
+
+p = fork()
+return:
+original - pid
+copy - 0
