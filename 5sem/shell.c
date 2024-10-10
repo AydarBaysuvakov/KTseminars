@@ -8,7 +8,6 @@
 #include <string.h>
 
 const size_t BUFFER_SIZE = 1024;
-const size_t MAX_PARAM   = 1024;
 
 struct Buf {
 	char* buffer;
@@ -18,6 +17,7 @@ struct Buf {
 	size_t par_size;
 	char*** programs;
 	size_t program_n;
+	int signal;
 };
 
 void parse(struct Buf* buf) {
@@ -71,19 +71,20 @@ void execute_files(struct Buf* buf) {
 			}
 			exit(EXIT_SUCCESS);
 		}
+		if (i > 0) close(fd[2 * i]);
+		if (i < buf->program_n - 1) close(fd[2 * i + 1]);
 	}
-	wait(NULL);
-	for (int i = 1; i < buf->program_n - 1; i++) close(fd[i]);
+	for (int i = 0; i < buf->program_n; i++) wait(NULL);
 	free(fd);
 }
 
 int main() {
-	int flag = 1;
 	struct Buf buf;
 	buf.buf_size = BUFFER_SIZE;
 	buf.buffer = (char*) malloc(buf.buf_size);
-	
-	while (flag) {
+	buf.signal = 1;
+
+	while (buf.signal) {
 		write(1, "$ ", 2);
 		buf.len = getline(&buf.buffer, &buf.buf_size, stdin);
 		if (strncmp(buf.buffer, "exit", 4) == 0) {
