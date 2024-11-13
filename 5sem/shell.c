@@ -9,91 +9,112 @@
 
 const size_t BUFFER_SIZE = 1024;
 
-struct Buf {
-	char* buffer;
-	size_t buf_size;
+struct Shell_t {
+	size_t buffer_size;
+	
 	size_t len;
-	char** parsed;
-	size_t par_size;
+	char* buffer;
+	
+	char** parsed_line;
+	size_t words_count;
+	
 	char*** programs;
-	size_t program_n;
+	size_t program_count;
+	
 	int signal;
 };
 
-void parse(struct Buf* buf) {
+void parse_line(struct Shell_t* shell) {
 	int flag = 1; 
-	buf->par_size = 0;
-	buf->program_n = 1;
-	for (int i = 0; i < buf->len; i++) {
-		if (buf->buffer[i] == '|') buf->program_n++;
-		if (buf->buffer[i] == ' ') flag = 1;
+	shell->words_count = 0;
+	shell->program_count = 1;
+	for (int i = 0; i < shell->len; i++) {
+		if (shell->buffer[i] == '|') shell->program_count++;
+		if (shell->buffer[i] == ' ') flag = 1;
 		else if (flag) {
-			buf->par_size++;
+			shell->words_count++;
 			flag = 0;
 		}
 	}
-	buf->parsed = (char**) calloc(buf->par_size + 1, sizeof(char*));
-	buf->programs = (char***) calloc(buf->program_n, sizeof(char**));
-	for (int i = 0, word = 0; i < buf->len;) {
-		while (buf->buffer[i] == ' ') i++;
-		buf->parsed[word++] = buf->buffer + i;
-		while (buf->buffer[i] != ' ' && buf->buffer[i] != '\n') i++;
-		buf->buffer[i++] = '\0';
+	shell->parsed_line = (char**) calloc(shell->words_count + 1, sizeof(char*));
+	shell->programs = (char***) calloc(shell->program_count, sizeof(char**));
+	for (int i = 0, word = 0; i < shell->len;) {
+		while (shell->buffer[i] == ' ') i++;
+		shell->parsed_line[word++] = shell->buffer + i;
+		while (shell->buffer[i] != ' ' && shell->buffer[i] != '\n') i++;
+		shell->buffer[i++] = '\0';
 	}
-	buf->parsed[buf->par_size] = NULL;
-	buf->programs[0] = buf->parsed;
-	for (int i = 1, prog = 1; i < buf->par_size; i++) {
-		if (strcmp(buf->parsed[i], "|") == 0) {
-			buf->programs[prog++] = buf->parsed + i + 1;
-			buf->parsed[i] = NULL;
+	shell->parsed_line[shell->words_count] = NULL;
+	shell->programs[0] = shell->parsed_line;
+	for (int i = 1, prog = 1; i < shell->words_count; i++) {
+		if (strcmp(shell->parsed_line[i], "|") == 0) {
+			shell->programs[prog++] = shell->parsed_line + i + 1;
+			shell->parsed_line[i] = NULL;
 		}
 	}
 }
 
-void execute_files(struct Buf* buf) {
-	int* fd = (int*) calloc(buf->program_n * 2, sizeof(int));
+void execute_files(struct Shell_t* shell) {
+	int* fd = (int*) calloc(shell->program_count * 2, sizeof(int));
 	fd[0] = 0;
-	fd[buf->program_n * 2 - 1] = 1;
+	fd[shell->program_count * 2 - 1] = 1;
 
-	for (int i = 0; i < buf->program_n; i++) {
-		if (i < buf->program_n - 1) {
+	for (int i = 0; i < shell->program_count; i++) {
+		if (i < shell->program_count - 1) {
 			int x[2];
-			pipe(x);
+			if (pipe(x) < 0) {
+				perror("pipe error");
+				exit(EXIT_FAILURE);
+			}
 			fd[2 * i + 1] = x[1];
 			fd[2 * i + 2] = x[0];
 		}
 		if (fork() == 0) {
 			dup2(fd[2 * i], 0);
 			dup2(fd[2 * i + 1], 1);
-			if (execvp(buf->programs[i][0], buf->programs[i]) < 0) {
+			if (execvp(shell->programs[i][0], shell->programs[i]) < 0) {
 				perror("Can't execute program");
+				shell->signal = 0;
 				exit(EXIT_FAILURE);
 			}
 			exit(EXIT_SUCCESS);
 		}
+		else {
+			int wstatus;
+			wait(&wstatus);
+			if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == EXIT_FAILURE) shell->signal = 0;
+		}
 		if (i > 0) close(fd[2 * i]);
-		if (i < buf->program_n - 1) close(fd[2 * i + 1]);
+		if (i < shell->program_count - 1) close(fd[2 * i + 1]);
 	}
-	for (int i = 0; i < buf->program_n; i++) wait(NULL);
+	for (int i = 0; i < shell->program_count; i++) wait(NULL);
 	free(fd);
 }
 
 int main() {
-	struct Buf buf;
-	buf.buf_size = BUFFER_SIZE;
-	buf.buffer = (char*) malloc(buf.buf_size);
-	buf.signal = 1;
+	struct Shell_t shell;
 
-	while (buf.signal) {
+	shell.buffer_size = BUFFER_SIZE;
+	shell.buffer = (char*) malloc(shell.buffer_size);
+	
+	shell.signal = 1;
+
+	while (shell.signal) {
 		write(1, "$ ", 2);
-		buf.len = getline(&buf.buffer, &buf.buf_size, stdin);
-		if (strncmp(buf.buffer, "exit", 4) == 0) {
+
+		shell.len = getline(&shell.buffer, &shell.buffer_size, stdin);
+		if (shell.len < 0) {
+			perror("getline error");
 			break;
 		}
-		parse(&buf);
-		execute_files(&buf);
-		free(buf.parsed);
-		free(buf.programs);
+		if (strncmp(shell.buffer, "exit", 4) == 0) {
+			break;
+		}
+
+		parse_line(&shell);
+		execute_files(&shell);
+		free(shell.parsed_line);
+		free(shell.programs);
 	}
-	free(buf.buffer);
+	free(shell.buffer);
 }

@@ -1,60 +1,167 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
+#include <string.h>
+#include <getopt.h>
+#include <time.h>
 
-int main(const int argc, char* argv[]) {
-    	const char* files[argc] = {NULL};
-	char lflag = 0;
-	char iflag = 0;
-	// TODO: bit field (union)
-	if (argc < 2) {
-		files[0] = ".";
+const int STRING_LEN = 1024;
+
+enum RIGHTS {
+	X_OTHER 	= 1 << 0,
+	W_OTHER 	= 1 << 1,
+	R_OTHER 	= 1 << 2,
+	X_GROUP 	= 1 << 3,
+	W_GROUP 	= 1 << 4,
+	R_GROUP 	= 1 << 5,
+	X_OWNER 	= 1 << 6,
+	W_OWNER 	= 1 << 7,
+	R_OWNER 	= 1 << 8,
+	DIRECTORY 	= 1 << 14,
+	REGULAR   	= 1 << 15
+};
+
+// -l --long, -i --inode, -R --recursive, -a --all, -d --directory
+
+// TODO: -d, time, blocksize
+
+enum FLAGS {
+	long_flag 		= 1 << 0,
+	inode_flag 		= 1 << 1,
+	recursive_flag 	= 1 << 2,
+	all_flag 		= 1 << 3,
+	directory_flag 	= 1 << 4,
+};
+
+void print_inode(struct dirent* ent, int flags) {
+    if (flags & inode_flag)
+        printf("%llu ", (long long int) ent->d_ino);
+}
+
+
+void print_listing(struct stat *st, int flags) {
+    if(flags & long_flag){
+        if (st->st_mode & DIRECTORY) printf("d");
+		if (st->st_mode & REGULAR  ) printf("-");
+		
+		printf( (st->st_mode & R_OWNER) ? "r" : "-");
+		printf( (st->st_mode & W_OWNER) ? "w" : "-");
+		printf( (st->st_mode & X_OWNER) ? "x" : "-");
+
+		printf( (st->st_mode & R_GROUP) ? "r" : "-");
+		printf( (st->st_mode & W_GROUP) ? "w" : "-");
+		printf( (st->st_mode & X_GROUP) ? "x" : "-");
+
+		printf( (st->st_mode & R_OTHER) ? "r" : "-");
+		printf( (st->st_mode & W_OTHER) ? "w" : "-");
+		printf( (st->st_mode & X_OTHER) ? "x" : "-");
+
+        printf(" %lld ", (long long int) st->st_nlink); 
+        printf("%s ", getpwuid(st->st_uid)->pw_name);
+        printf("%s ", getgrgid(st->st_gid)->gr_name);
+		printf("%lld ",  (long long int) st->st_blksize);
+
+        // char buffer[STRING_LEN];
+        // strftime(buffer, STRING_LEN, "%D %T ", gmtime(&st->st_mtimensec.tv_sec));
+        // printf("%s ", buffer);
+    }
+}
+const char* getname(const char *path) {
+	const char* ptr = path;
+	const char* filename = path;
+	while (*ptr) {
+		if (*ptr == '/' && *(ptr + 1))
+			filename = ptr + 1;
+		ptr++;
 	}
-    	else { 
-		int file_found = 0;
-		for (int i = 1; i < argc; i++) {
-			if (argv[i][0] == '-') {
-				for (int j = 1; argv[i][j]; j++) {
-					switch (argv[i][j]) {
-						case 'l': lflag = 1; break;
-						case 'i': iflag = 1; break;
-						default: printf("Wrong flag: %c\n", argv[i][j]);
-					}
-				}
-			}
-			else {
-				files[i] = argv[i];
-				file_found = 1;
+	return filename;
+}
+
+void print_dirs(const char* path, int flags) {
+	DIR* dir;
+    struct stat    st;
+    struct dirent* ent;
+    char filepath[STRING_LEN];
+
+    if (flags & directory_flag) {
+		dir = opendir(".");
+		const char* filename = getname(path);
+        while (ent = readdir(dir)) {
+			if (!strncmp(filename, ent->d_name, strlen(filename))) {
+				sprintf(filepath, "./%s", ent->d_name);
+				stat(filepath, &st);
+				print_inode(ent  , flags); 
+				print_listing(&st, flags);
+				printf(" %s ", ent->d_name);
 			}
 		}
-		if (!file_found) files[0] = ".";
-
-	}
-
-    	for (int i = 0; i < argc; i++) {
-		if (files[i]) {
-	    		DIR* dir;
-		    	if (!(dir = opendir(files[i]))) {
-			   	perror("Can't open directory");
-		    		continue;
-		    	}
-	
-			printf("%s:\n", files[i]);
-			struct dirent *ent;
+		closedir(dir);
+    }
+	else {
+		dir = opendir(path);
+		if (!dir) {
+			perror("Can't open directory");
+			return;
+		}
+		printf("%s:\n", path);
+		while (ent = readdir(dir)) {
+			if ((ent->d_name[0] != '.') || (flags & all_flag)) {
+				sprintf(filepath, "%s/%s", path, ent->d_name);
+				stat(filepath, &st);
+                print_inode(ent  , flags);
+                print_listing(&st, flags);
+				printf("%s  ", ent->d_name);
+				if (flags & long_flag) putchar('\n');
+			}
+		}
+		if (flags & recursive_flag) {
+			rewinddir(dir);
 			while (ent = readdir(dir)) {
-				if (iflag) printf("%ld ", ent->d_ino);
-				if (lflag) {
-					printf("%c%c%c%c%c%c%c%c%c ", '-', '-', '-', '-', '-', '-', '-', '-', '-');
-					printf("(pid) (uid) (gid) ");
-					printf("(size) (data) %s\n", ent->d_name);
+				if (ent->d_type == DT_DIR && ent->d_name[0] != '.') {
+					sprintf(filepath, "%s/%s", path, ent->d_name);
+					putchar('\n');
+					print_dirs(filepath, flags);
 				}
-				else printf("%s ", ent->d_name);
 			}
-			if (errno) {
-				perror("dirent error");
-			}
-			closedir(dir);
-			putchar('\n');
 		}
+		putchar('\n');
+		closedir(dir);
 	}
+}
+
+static struct option longopts[] = { 
+	{ "long"     , 	no_argument, NULL, 'l'},
+	{ "inode"    , 	no_argument, NULL, 'i'},
+	{ "recursive", 	no_argument, NULL, 'R'},
+	{ "all"      , 	no_argument, NULL, 'a'},
+	{ "directory", 	no_argument, NULL, 'd'},
+};
+
+int main(int argc, char* argv[]) {
+	int opt, flags = 0;
+    while ((opt = getopt_long(argc, argv, "liRad", longopts, NULL)) != -1) {
+        switch (opt) {
+            case 'l': flags = flags | long_flag;  		break; 
+            case 'i': flags = flags | inode_flag; 		break; 
+            case 'R': flags = flags | recursive_flag; 	break;
+            case 'a': flags = flags | all_flag; 		break; 
+            case 'd': flags = flags | directory_flag; 	break;
+        }
+    }
+
+	if (optind == argc) {
+        print_dirs(".", flags); 
+        printf("\n");
+    }
+    else {
+        for (int i = optind; i < argc; i++) {
+            print_dirs(argv[i], flags);
+            printf("\n");
+        }
+    }
 }

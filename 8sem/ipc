@@ -1,0 +1,35 @@
+IPC
+
+sys V IPC
+Взаимодействия внутри машины
+1.Очередь сообщений (message query)
+2.Семофоры (semapare)
+3.Общая память (shared memory)
+
+1)  id = get(key_t, flags)
+    msgget, semget, shmget
+
+2)  file to key
+    key = ftok(path, num)
+
+3)  key == IPC_PRIVATE
+
+id = msgget(key)
+fork()
+ctl(id, cmd, PC_RM_D)
+
+Message query:
+char buf[N]
+msg ---> FIFO --> 
+    send    recieve
+long type > 0
+
+FIFO (одна очередь для всех данных с разным типом)
+Много очередей для каждого типа
+
+msgsnd(id, buf, sz, flags)
+buf - struct msgbuf {long type; data}
+msgrcv(id, buf, sz, typ, flags)
+typ == 0 - any
+typ > 0  - only "typ"
+typ < 0  - all <= |typ|

@@ -1,0 +1,39 @@
+msgget / semget / shmget
+
+shmget:
+p = malloc(size);
+p[15] = 'h';
+p->x = 3.14;
+
+id = shmget(..., size);
+shmat(adr = NULL, )
+
+semget:
+sem i = 1;
+binary semafore - 0 or 1
+counted semafore - unsigned int
+(Бинарный и счетный)
+i++, i--, i +=, i -=;
+Семафор не вычитается, если результат отрицательный (Происходит ожидание)
+Прибавление выполняется без ожидания
+
+binary:
+P() -> --
+V() -> ++
+
+Критическая секция:
+sem cr = 1;
+-----p1-----
+P(cr);
+// code
+V(cr);
+-----p2-----
+P(cr);
+// code
+V(cr);
+----------------
+
+id = semget(); (получаем массив семафоров)
+pos[] = {n, +1(-1)};
+semop(id, pos, )
+semctl();
