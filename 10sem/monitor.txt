@@ -1,0 +1,55 @@
+Мониторы Хоара: ООП-стиль
+
+PC:
+// shared variables
+int n;
+char str[512];
+
+// critical section functions
+put();
+get();
+
+// conditional variables
+Condition var;
+
+	var.wait;
+	var.signal;
+
+Потоки (нити, thread)
+У самого потока есть только контекст CPU
+Потоки могут использовать весь контекст процесса
+
+POSIX threads:
+libs:	pthread-...
+
+	kernel threads
+
+void xfunc(void *p) {
+	/* your code here */
+	return p;
+}
+
+pthread_create;
+&tid
+attr // NULL
+func,
+P) --> func(P)
+
+crit section in threads:
+pthread_mutex_t m;
+a) m = PTHREAD_MUTEX_INITIALISZER;
+b) pthread_mutex_init(&m, NULL);
+
+pthread_mutex_lock(&m);
+pthread_mutex_unlock(&m);
+
+pthread_cond_t c;
+1) c = PTHREAD_COND_INITIALIZER;
+2) pthread_cond_init(&c, NULL);
+
+pthread_cond_wait(&c, &m);
+pthread_cond_signal(&c);
+
+pthread_join(&tid);
+pthread_exit(p);
+
