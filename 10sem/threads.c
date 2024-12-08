@@ -46,4 +46,6 @@ int main() {
 
     pthread_create(&write_thread, NULL, write, &arg);
     pthread_join(write_thread, NULL);
+
+    pthread_mutex_destroy(&arg.m);
 }
