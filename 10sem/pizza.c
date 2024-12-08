@@ -18,9 +18,9 @@ struct Pizza {
 
 void * put_d(void *arg) {
     struct Pizza * a = (struct Pizza*) arg;
-    while ((a->storage)[curent_pizza][top_ingredient] == "o") {
+    while ((a->storage)[a->curent_pizza][a->top_ingredient] == "o") {
         pthread_mutex_lock(&a->m);
-        strncat((a->storage)[curent_pizza], "d", 1);
+        strncat((a->storage)[a->curent_pizza], "d", 1);
         pthread_mutex_unlock(&a->m);
     }
     return a;
@@ -39,7 +39,7 @@ void povar_d(struct Pizza * pizza) {
     pthread_t thread;
     for (int i = 0; i < PIZZA_COUNT; i++) {
 	create_pthread(&thread, NULL, put_d, pizza);
-	join_pthread(pthread, NULL);
+	join_pthread(thread, NULL);
     }
 }
 

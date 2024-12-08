@@ -1,0 +1,31 @@
+POSIX - name "hello" "/sem5"
+Objects: semaphores, shared memory, message query
+
+sem_open(path, flags, ...)
+	      O_CREAT 0777
+sem_t*
+sem_unlink  - удалить имя объекта
+sem_post +1 
+sem_wait -1
+sem_init    - иициализировать
+sem_destroy - уничтожить
+
+fd = shm_open()
+ftruncate - изменить длину
+m = mmap - отобразить
+munmap
+
+producer:
+wait(empty)	<--
+produce		  |
+put		  |
+post(full)	---
+
+consumer:
+wait(full)	<--
+get		  |
+post(empty)	  |
+consume		---
+
+pcat oldfile (read from oldfile -> ) 
+ccat newfile ( -> write to newfile)

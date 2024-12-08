@@ -12,8 +12,6 @@
 const size_t BUFFER_SIZE = 1024;
 const size_t SEM_COUNT = 8;
 
-
-
 int main() {
     int shmid = shmget(IPC_PRIVATE, BUFFER_SIZE, 0777 | IPC_CREAT);
     if (shmid < 0) {

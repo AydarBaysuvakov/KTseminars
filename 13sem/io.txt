@@ -1,0 +1,19 @@
+i/o multiplex
+
+read/write blocked
+O_NONBLOCK/fcntl -> get | O_NONBLOCK
+		 <- set
+errno == EAGAIN / EWOULDBLOCK
+
+int select(rset, wset, eset, timeout);
+fdset_t[1024] FD_SET, FD_CLR, FD_ISSET
+
+if (ISSET())
+	read
+	write
+
+int poll(nelem, fds, tm)
+		|				POLLIN|POLLOUT
+		--> void struct array[3] = {fd, events, revents}
+
+

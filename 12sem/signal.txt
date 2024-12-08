@@ -1,0 +1,46 @@
+signal.h
+SIGINT
+1) default action
+2) ignore
+3) call handler functon
+
+void handler(int signo);
+volatile int flag;
+операции к int обычно atomic
+
+signal(SIGINT, handler_funtion)
+		SIG_IGN
+		SIG_DEF
+
+SIGINT   CTRL-C
+SIGQUIT  CTRL-\
+SIGTERM  kill(pid, signo)
+
+SIGSEGV
+SIGBUS
+SIGFPU
+SIGILL
+SIGCHLD
+SIGPIPE
+SIGALRM
+SIGKILL 9
+SIGWINCH
+
+1)ioctl(fd, cmd, args)
+ioctl_tty
+termio_tty
+TIOCGWINSZ -> cmd
+struct winsize -> arg
+2) ASCII control codes
+\e <=> \033[ H
+\033[5;40 H
+
+
+
+
+signal -> sigaction
+pause  -> sigsuspend
+mask sigsct_t
+pending
+
+sigaddset
