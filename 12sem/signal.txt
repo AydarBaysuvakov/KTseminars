@@ -40,7 +40,7 @@ struct winsize -> arg
 
 signal -> sigaction
 pause  -> sigsuspend
-mask sigsct_t
+mask sigset_t
 pending
 
 sigaddset
