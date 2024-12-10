@@ -6,16 +6,29 @@
 #include <fcntl.h>
 #include <semaphore.h>
 #include <string.h>
+#include <errno.h>
 
 const size_t BUFFER_SIZE = 1024;
-const char shm_filename[]   = "pccat_shm";
-const char semf_filename[]  = "pccat_semf";
-const char seme_filename[]  = "pccat_seme";
+const char shm_filename[]   = "/pccat_shm";
+const char full_filename[]  = "/pccat_full_sem";
+const char emty_filename[]  = "/pccat_empty_sem";
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         printf("Incorrect input");
         return 0;    
+    }
+
+    sem_t *full = sem_open(full_filename, O_CREAT, 0777, 0);
+    if (full == SEM_FAILED) {
+        perror("full sem_open failed");
+        return 0;
+    }
+
+    sem_t *empty = sem_open(emty_filename, O_CREAT, 0777, 1);
+    if (empty == SEM_FAILED) {
+        perror("empty sem_open failed");
+        return 0;
     }
 
     int file = open(argv[1], O_CREAT | O_WRONLY);
@@ -24,59 +37,47 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    int fd = shm_open(shm_filename, O_CREAT | O_RDWR, S_IRUSR);
-    if (fd < 0) {
+    int fd = shm_open(shm_filename, O_CREAT | O_RDWR, 0777);
+    if (fd < 0 && errno != EEXIST) {
         perror("shm_open failed");
         close(file);
         return 0;
+    } else if (fd < 0 && errno == EEXIST) {
+        fd = shm_open(shm_filename, O_RDWR, 0777);
+        if (fd == -1) {
+            perror("shm_open failed (second attempt)");
+            close(file);
+            return 0;
+        }
     }
 
-    if (ftruncate(fd, BUFFER_SIZE) < 0) {
+    if (ftruncate(fd, BUFFER_SIZE + 1) < 0 && errno != EINVAL) {
         perror("ftruncate failed");
         close(file);
         return 0;
     }
 
-    char *shmp = (char*) mmap(NULL, BUFFER_SIZE, PROT_READ, MAP_SHARED_VALIDATE, fd, 0);
+    char *shmp = (char*) mmap(NULL, BUFFER_SIZE + 1, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (shmp == MAP_FAILED) {
         perror("mmap failed");
         close(file);
         return 0;
     }
- 
-    sem_t *semf_ptr = sem_open(semf_filename, O_CREAT, 0777, 0);
-    if (semf_ptr == SEM_FAILED) {
-        perror("sem_open failed");
-        close(file);
-        return 0;
-    }
-
-    sem_t *seme_ptr = sem_open(seme_filename, O_CREAT, 0777, 1);
-    if (seme_ptr == SEM_FAILED) {
-        perror("sem_open failed");
-        close(file);
-        return 0;
-    }
 
 	while (1) {
-        sem_wait(semf_ptr);
-	if (shmp[0] == 0) break;
+        sem_wait(full);
+	    if (shmp[BUFFER_SIZE]) break;
         int wr = write(file, shmp, BUFFER_SIZE);
         if (wr < 0) {
             perror("Write failed");
-            close(file);
-            return 0;
+            break;
         }
         else if (wr == 0) break;
-        sem_post(seme_ptr);
+        sem_post(empty);
 	}
     close(file);
-    
-    if (munmap(shmp, BUFFER_SIZE) < 0) {
-        perror("munmap failed");
-    }
+    munmap(shmp, BUFFER_SIZE);
     shm_unlink(shm_filename);
-    sem_unlink(seme_filename);
-    sem_unlink(semf_filename);
-
+    sem_unlink(full_filename);
+    sem_unlink(emty_filename);
 }
