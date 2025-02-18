@@ -3,6 +3,7 @@
 #include "wcounter.h"
 #include "parser.h"
 #include "hashtable.h"
+#include "array.h"
 
 void word_count(FILE * fd)
 {
@@ -11,15 +12,24 @@ void word_count(FILE * fd)
     struct hashtable * ht = hashtable_ctor();
 
     char word[WORD_LEN] = "";
-    get_word(psr, word);
-    while (*word)
+    while (get_word(psr, word))
     {
         ht_add_word(ht, word);
-        get_word(psr, word);
+    }
+    
+    struct array * arr = array_ctor(ht);
+    sort(arr, ht);
+
+    unsigned count = 0;
+    for (int i = 0; i < arr->array_len; i++)
+    {
+        if (count = ht_get_count(ht, arr->arr[i]))
+        {
+            printf("%s: %d\n", ht_get_word(ht, arr->arr[i]), count);
+        }
     }
 
-    while (ht_print_word(ht) != -1) ;
-
+    array_dtor(arr);
     parser_dtor(psr);
     hashtable_dtor(ht);
 }
