@@ -1,25 +1,39 @@
 #include <stdio.h>
-#include <assert.h>
 #include "wcounter.h"
 #include "parser.h"
 #include "hashtable.h"
 #include "array.h"
 
-void word_count(FILE * fd)
+void word_count(const char * file)
 {
-    assert(fd);
-    struct parser * psr = parser_ctor(fd);
-    struct hashtable * ht = hashtable_ctor();
+    // Инициализация
+    parser * psr = parser_ctor(file);
+    if (!psr) return;
+    hashtable * ht = hashtable_ctor();
+    if (!ht) 
+    {
+        parser_dtor(psr);
+        return;
+    }
 
+    // Добавление слов в хеш-таблицу
     char word[WORD_LEN] = "";
     while (get_word(psr, word))
     {
         ht_add_word(ht, word);
     }
     
-    struct array * arr = array_ctor(ht);
+    // Преобразование хеш-таблицы в массив для удобной сортировки 
+    array * arr = array_ctor(ht);
+    if (!arr)
+    {
+        hashtable_dtor(ht);
+        parser_dtor(psr);
+        return;
+    }
     sort(arr, ht);
 
+    // Вывод данных на консоль
     unsigned count = 0;
     for (int i = 0; i < arr->array_len; i++)
     {

@@ -3,14 +3,14 @@
 
 #include "hashtable.h"
 
-struct array
+typedef struct array
 {
     unsigned long * arr;
     unsigned array_len;
-};
+} array;
 
-struct array * array_ctor(struct hashtable *);
-void array_dtor(struct array *);
-void sort(struct array *, struct hashtable *);
+array * array_ctor(hashtable *);
+void    array_dtor(array *);
+void    sort(array *, hashtable *);
 
 #endif //ARRAY

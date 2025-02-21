@@ -7,29 +7,41 @@
 
 struct parser
 {
-    FILE *       fd;
+    FILE * fd;
 };
 
-struct parser * parser_ctor(FILE * fd) 
+parser * parser_ctor(const char * file) 
 {
-    assert(fd);
-    struct parser * p = (struct parser *) malloc(sizeof(struct parser));
+    FILE * fd = stdin;
+    if (file) 
+    {
+        fd = fopen(file, "r");
+        if (!fd)
+        {
+            perror("Cannot open file");
+            return NULL;
+        }
+    }
+
+    parser * p = (parser *) malloc(sizeof(parser));
     if (!p)
     {
         perror("Cannot allocate memory for parser");
+        fclose(fd);
         return NULL;
     }
     p->fd = fd;
     return p;
 }
 
-void parser_dtor(struct parser * p)
+void parser_dtor(parser * p)
 {
     assert(p);
+    fclose(p->fd);
     free(p);
 }
 
-char * get_word(struct parser * p, char * word) 
+char * get_word(parser * p, char * word) 
 {
     assert(p);
     if(fscanf(p->fd, "%s", word) < 0) return NULL;

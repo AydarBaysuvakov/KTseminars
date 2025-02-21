@@ -3,11 +3,9 @@
 #include <stdio.h>
 #include "array.h"
 
-struct array;
-
-struct array * array_ctor(struct hashtable * ht) 
+array * array_ctor(hashtable * ht) 
 {
-    struct array * a = (struct array *) malloc(sizeof(struct array));
+    array * a = (array *) malloc(sizeof(array));
     if (!a)
     {
         perror("Cannot allocate memory for array");
@@ -28,7 +26,7 @@ struct array * array_ctor(struct hashtable * ht)
     return a;
 }
 
-void array_dtor(struct array * a)
+void array_dtor(array * a)
 {
     assert(a);
     free(a);
@@ -37,7 +35,7 @@ void array_dtor(struct array * a)
 // реализовал сортировку пузырьком для экономии своего личного времени (при необходимости могу написать сортировку получше)
 // не применяю встроенные функции типа qsort, так как их тяжело примкнуть к хеш-таблице (если не менять саму хеш таблицу, что на мой взгляд ужасно)
 // если не делать хеш-таблицу глобальной, то ее не получится вызвать в функции компараторе
-void sort(struct array * a, struct hashtable * ht)
+void sort(array * a, hashtable * ht)
 {
     assert(a);
 

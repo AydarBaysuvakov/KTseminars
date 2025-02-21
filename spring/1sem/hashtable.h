@@ -5,17 +5,16 @@
 #define WORD_LEN 128
 #define BUFFER_LENGHT WORD_LEN * HASHTABLE_SIZE
 
-struct   hashtable;
-struct   table_elem;
-struct   array;
+typedef struct hashtable hashtable;
+typedef struct table_elem table_elem;
 
-unsigned hash_function(const char *);
-struct   hashtable * hashtable_ctor();
-void     hashtable_dtor(struct hashtable *);
+unsigned    hash_function(const char *);
+hashtable * hashtable_ctor();
+void        hashtable_dtor(hashtable *);
 
-void     ht_add_word(struct hashtable *, const char *);
-char *   ht_get_word(struct hashtable *, unsigned);
-unsigned ht_get_count(struct hashtable *, unsigned);
-unsigned ht_get_elem_count(struct hashtable *);
+void     ht_add_word(hashtable *, const char *);
+char *   ht_get_word(hashtable *, unsigned);
+unsigned ht_get_count(hashtable *, unsigned);
+unsigned ht_get_elem_count(hashtable *);
 
 #endif //HASH

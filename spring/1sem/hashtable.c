@@ -7,9 +7,9 @@
 
 struct hashtable 
 {
-    struct table_elem * table[HASHTABLE_SIZE];
-    char   buffer[BUFFER_LENGHT];
-    unsigned elem_count;
+    table_elem * table[HASHTABLE_SIZE];
+    char         buffer[BUFFER_LENGHT];
+    unsigned     elem_count;
 };
 
 struct table_elem
@@ -30,19 +30,19 @@ unsigned hash_function(const char *str)
     return hash % HASHTABLE_SIZE;
 }
 
-struct hashtable * hashtable_ctor() 
+hashtable * hashtable_ctor() 
 {
-    struct hashtable * ht = (struct hashtable *) malloc(sizeof(struct hashtable));
+    hashtable * ht = (hashtable *) malloc(sizeof(hashtable));
     if (!ht)
     {
         perror("Cannot allocate memory for hash table");
         return NULL;
     }
-    memset(ht, 0, sizeof(struct hashtable));
+    memset(ht, 0, sizeof(hashtable));
     return ht;
 }
 
-void hashtable_dtor(struct hashtable * ht)
+void hashtable_dtor(hashtable * ht)
 {
     assert(ht);
 
@@ -54,7 +54,7 @@ void hashtable_dtor(struct hashtable * ht)
     free(ht);
 }
 
-void ht_add_word(struct hashtable * ht, const char * word)
+void ht_add_word(hashtable * ht, const char * word)
 {
     assert(ht);
 
@@ -65,14 +65,14 @@ void ht_add_word(struct hashtable * ht, const char * word)
             return;
         }
     strncpy(ht->buffer + hash * WORD_LEN, word, WORD_LEN);
-    ht->table[hash] = (struct table_elem *) malloc(sizeof(struct table_elem));
+    ht->table[hash] = (table_elem *) malloc(sizeof(table_elem));
     ht->table[hash]->counter = 1;
     ht->table[hash]->hash    = hash;
     ht->table[hash]->word    = ht->buffer + hash * WORD_LEN;
     ht->elem_count++;
 }
 
-char * ht_get_word(struct hashtable * ht, unsigned hash)
+char * ht_get_word(hashtable * ht, unsigned hash)
 {
     assert(ht);
 
@@ -81,7 +81,7 @@ char * ht_get_word(struct hashtable * ht, unsigned hash)
     return NULL;
 }
 
-unsigned ht_get_count(struct hashtable * ht, unsigned hash)
+unsigned ht_get_count(hashtable * ht, unsigned hash)
 {
     assert(ht);
 
@@ -90,7 +90,7 @@ unsigned ht_get_count(struct hashtable * ht, unsigned hash)
     return 0;
 }
 
-unsigned ht_get_elem_count(struct hashtable * ht)
+unsigned ht_get_elem_count(hashtable * ht)
 {
     assert(ht);
     return ht->elem_count;
