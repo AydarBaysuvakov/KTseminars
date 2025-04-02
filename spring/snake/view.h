@@ -1,37 +1,31 @@
-class View;
-class TView;
-class GView;
-
-enum Color {
-    BLACK   = 30,
-    RED     = 31,
-    GREEN   = 32,
-    YELLOW  = 33,
-    BLUE    = 34,
-    MAGENTA = 35,
-    CYAN    = 36,
-    WHITE   = 37,
-    DEFAULT = 0
-};
+#pragma once
 
 class View {
 public:
-    virtual void draw() = 0;
-    static View * getView(char type, int size = 10);
+    virtual void draw(int x, int y, char c, int color) = 0;
+    virtual void run() = 0;
+    virtual void add_control(Control * control) = 0;
+    static View * getView(char type, Model &model);
 };
 
 class TView : View {
-    int screen_size;
+    Model &model;
+    std::vector <Control *> controllers;
+    termios oldt, newt;
 
 public:
-    TView(int size) : screen_size(size) {}
-    virtual void draw();
+    TView(Model &model) : model(model) {};
+    virtual void draw(int x, int y, char c, int color);
+    virtual void run();
+    virtual void add_control(Control * control);
 
 private:
+    void alignscr();
     void clrscr();
     void gotoxy(int x, int y);
     void setbgrcolor(int color);
     void settxtcolor(int color);
     void resetcolor();
     void drawframe();
+    bool key_pressed();
 };
