@@ -1,5 +1,7 @@
 #pragma once
 
+bool key_pressed();
+
 class View {
 public:
     virtual void draw(int x, int y, char c, int color) = 0;
@@ -28,4 +30,20 @@ private:
     void resetcolor();
     void drawframe();
     bool key_pressed();
+};
+
+class GView : View {
+    Model &model;
+    std::vector <Control *> controllers;
+    sf::RenderWindow window;
+
+public:
+    GView(Model &model) : model(model) {};
+    virtual void draw(int x, int y, char c, int color);
+    virtual void run();
+    virtual void add_control(Control * control);
+
+private:
+    sf::Color convert_color(int color);
+    char convert_input(sf::Keyboard::Key input);
 };

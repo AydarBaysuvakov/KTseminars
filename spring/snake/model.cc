@@ -3,7 +3,7 @@
 Model::Model() {
     Snake snake1(RED), snake2(BLUE);
     snakes.push_back(snake1); 
-    snakes.push_back(snake2); 
+    //snakes.push_back(snake2); 
     rabbits.push_back({rand() % windowsize::width, rand() % windowsize::height});
     rabbits.push_back({rand() % windowsize::width, rand() % windowsize::height});
     rabbits.push_back({rand() % windowsize::width, rand() % windowsize::height});
@@ -17,8 +17,45 @@ void Model::update() {
     }
 }
 
-Snake::Snake(Color color) : color(color), direction(RIGHT) {
-    body.push_back({rand() % windowsize::width, rand() % windowsize::height});
+Snake::Snake(Color color) : color(color) {
+    int x = (rand() % (windowsize::width  / 2)) + (windowsize::width  / 4);
+    int y = (rand() % (windowsize::height / 2)) + (windowsize::height / 4);
+    body.push_back({x, y});
+
+    int dir = rand() % 4;
+    switch (dir) {
+        case UP:
+            direction = UP;
+            body.push_back({x, y - 1});
+            body.push_back({x, y - 2});
+            break;
+        case DOWN:
+            direction = DOWN;
+            body.push_back({x, y + 1});
+            body.push_back({x, y + 2});
+            break;
+        case RIGHT:
+            direction = RIGHT;
+            body.push_back({x - 1, y});
+            body.push_back({x - 2, y});
+            break;
+        case LEFT:
+            direction = LEFT;
+            body.push_back({x + 1, y});
+            body.push_back({x + 2, y});
+            break;
+        
+        default:
+            break;
+    }
+}
+
+void Snake::set_direction(Direction newDirection) { 
+    if (direction == UP     && newDirection == DOWN)    return;
+    if (direction == DOWN   && newDirection == UP)      return;
+    if (direction == RIGHT  && newDirection == LEFT)    return;
+    if (direction == LEFT   && newDirection == RIGHT)   return;
+    direction = newDirection; 
 }
 
 int Snake::move(std::vector <Rabbit> &rabbits) {

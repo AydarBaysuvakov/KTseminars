@@ -1,4 +1,4 @@
-CFLAGS=-g -O0 -Wall
+CFLAGS=-g -O0 -Wall -lsfml-graphics -lsfml-window -lsfml-system
 O_FILES= main.o model.o view.o control.o
 
 all: snake clean

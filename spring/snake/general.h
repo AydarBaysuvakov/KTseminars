@@ -7,8 +7,11 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <vector>
+#include <SFML/Graphics.hpp>
 
 enum Direction { UP, RIGHT, DOWN, LEFT };
+
+const int INFINITY = 1215752192;
 
 const int PERIOD = 150000;
 enum Color {
@@ -26,6 +29,8 @@ enum Color {
 const char TEXT_MODE = 't';
 const int  WIDTH  = 30;
 const int  HEIGTH = 15;
+
+const int BLOCK_SIZE = 20;
 
 namespace windowsize {
     extern int width;

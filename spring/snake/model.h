@@ -30,8 +30,8 @@ public:
     int move(std::vector <Rabbit> &rabbits);
 
     int  get_direction() { return direction; }
-    int  get_color()     { return color; }
-    void set_direction(Direction newDirection) { direction = newDirection; }
+    int  get_color()   { return color; };
+    void set_direction(Direction newDirection);
 
     std::vector <Segment> get_body() { return body; }
     Segment get_head() { return body.front(); }
@@ -54,5 +54,5 @@ class Model {
 
     int isGameOver() const { return game_over; }
     void GameOver() {game_over = 1;}
-    void change_direction(int index, Direction dir) { snakes[index].set_direction(dir); }
+    void change_direction(int index, Direction dir) { if (index < snakes.size()) snakes[index].set_direction(dir); }
 };

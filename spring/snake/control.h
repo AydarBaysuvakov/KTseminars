@@ -36,8 +36,12 @@ public:
 class Control_dummy : Control {
     Model& model;
     int snake_index;
+    Rabbit closest;
 
 public:
     Control_dummy(Model &model, int snake_index) : model(model), snake_index(snake_index) {};
     virtual void handle_input(char c);
+
+private:
+    Rabbit get_closest();
 };

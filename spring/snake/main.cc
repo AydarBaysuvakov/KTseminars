@@ -16,8 +16,8 @@ int main(int argc, const char * argv[])
     if (argc > 3) windowsize::height = atoi(argv[3]);
 
     Model model;
-    Control * control1 = Control::getControl('w', model, 0);
-    Control * control2 = Control::getControl('a', model, 1);
+    Control * control1 = Control::getControl('a', model, 0);
+    Control * control2 = Control::getControl('w', model, 1);
     View * view = View::getView(type, model);
     view->add_control(control1);
     view->add_control(control2);
