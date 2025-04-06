@@ -58,7 +58,9 @@ void TView::draw(int x, int y, char c, int color) {
 }
 
 void TView::add_control(Control * control) {
+    control->set_index(controllers.size());
     controllers.push_back(control);
+    model.add_snake();
 }
 
 void TView::alignscr() {
@@ -216,5 +218,7 @@ void GView::draw(int x, int y, char c, int color) {
 }
 
 void GView::add_control(Control * control) {
+    control->set_index(controllers.size());
     controllers.push_back(control);
+    model.add_snake();
 }

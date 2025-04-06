@@ -1,20 +1,36 @@
 #include "general.h"
 
 Model::Model() {
-    Snake snake1(RED), snake2(BLUE);
-    snakes.push_back(snake1); 
-    //snakes.push_back(snake2); 
-    rabbits.push_back({rand() % windowsize::width, rand() % windowsize::height});
-    rabbits.push_back({rand() % windowsize::width, rand() % windowsize::height});
-    rabbits.push_back({rand() % windowsize::width, rand() % windowsize::height});
+    add_rabbit();
+    add_rabbit();
+    add_rabbit();
 }
 
 void Model::update() {
     if (game_over) return;
 
     for (int i = 0; i < snakes.size(); i++) {
-        game_over |= snakes[i].move(rabbits);
+        game_over |= snakes[i].move(rabbits, snakes);
     }
+}
+
+Color convert_color(int color) {
+    switch (color) {
+        case BLACK:     return BLACK;
+        case RED:       return RED;
+        case GREEN:     return GREEN;
+        case YELLOW:    return YELLOW;
+        case BLUE:      return BLUE;
+        case MAGENTA:   return MAGENTA;
+        case CYAN:      return CYAN;
+        case WHITE:     return WHITE;
+    } 
+    return BLACK; 
+}
+
+void Model::add_snake() {
+    Snake snake(convert_color(RED + snakes.size()));
+    snakes.push_back(snake);
 }
 
 Snake::Snake(Color color) : color(color) {
@@ -58,7 +74,7 @@ void Snake::set_direction(Direction newDirection) {
     direction = newDirection; 
 }
 
-int Snake::move(std::vector <Rabbit> &rabbits) {
+int Snake::move(std::vector <Rabbit> &rabbits, std::vector <Snake> &snakes) {
     Segment head = get_head();
     Segment newHead(0, 0);
 
@@ -88,10 +104,12 @@ int Snake::move(std::vector <Rabbit> &rabbits) {
         newHead.get_y() == -1 || newHead.get_y() == windowsize::height) {
         return 1;
     }
-
-    for (size_t i = 1; i < body.size(); ++i) {
-        if (newHead == body[i]) {
-            return 1;
+    
+    for (auto snake : snakes) {
+        for (size_t i = 1; i < snake.get_body().size(); ++i) {
+            if (newHead == snake.get_body()[i]) {
+                return 1;
+            }
         }
     }
 

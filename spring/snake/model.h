@@ -27,7 +27,7 @@ class Snake {
 
 public:
     Snake(Color color);
-    int move(std::vector <Rabbit> &rabbits);
+    int move(std::vector <Rabbit> &rabbits, std::vector <Snake> &snakes);
 
     int  get_direction() { return direction; }
     int  get_color()   { return color; };
@@ -55,4 +55,6 @@ class Model {
     int isGameOver() const { return game_over; }
     void GameOver() {game_over = 1;}
     void change_direction(int index, Direction dir) { if (index < snakes.size()) snakes[index].set_direction(dir); }
+    void add_rabbit() { rabbits.push_back({rand() % windowsize::width, rand() % windowsize::height}); }
+    void add_snake();
 };

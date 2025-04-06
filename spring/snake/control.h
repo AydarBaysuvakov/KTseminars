@@ -3,7 +3,8 @@
 class Control {
 public:
     virtual void handle_input(char c) = 0;
-    static Control * getControl(char type, Model &model, int snake_index);
+    virtual void set_index(int index) = 0;
+    static Control * getControl(char type, Model &model);
 };
 
 class Control_wasd : Control {
@@ -11,8 +12,9 @@ class Control_wasd : Control {
     int snake_index;
 
 public:
-    Control_wasd(Model &model, int snake_index) : model(model), snake_index(snake_index) {};
+    Control_wasd(Model &model) : model(model){};
     virtual void handle_input(char c);
+    virtual void set_index(int index) { snake_index = index; }
 };
 
 class Control_arrow : Control {
@@ -20,17 +22,25 @@ class Control_arrow : Control {
     int snake_index;
 
 public:
-    Control_arrow(Model &model, int snake_index) : model(model), snake_index(snake_index) {};
+    Control_arrow(Model &model) : model(model) {};
     virtual void handle_input(char c);
+    virtual void set_index(int index) { snake_index = index; }
 };
 
 class Control_smart : Control {
     Model& model;
     int snake_index;
+    Rabbit closest;
 
 public:
-    Control_smart(Model &model, int snake_index) : model(model), snake_index(snake_index) {};
+    Control_smart(Model &model) : model(model), closest({-1, -1}) {};
     virtual void handle_input(char c);
+    virtual void set_index(int index) { snake_index = index; }
+
+private:
+    void get_closest();
+    bool get_path();
+    bool is_wall(int* walls);
 };
 
 class Control_dummy : Control {
@@ -39,9 +49,12 @@ class Control_dummy : Control {
     Rabbit closest;
 
 public:
-    Control_dummy(Model &model, int snake_index) : model(model), snake_index(snake_index) {};
+    Control_dummy(Model &model) : model(model), closest({-1, -1}) {};
     virtual void handle_input(char c);
+    virtual void set_index(int index) { snake_index = index; }
 
 private:
-    Rabbit get_closest();
+    void get_closest();
+    bool get_path();
+    bool is_wall(int* walls);
 };
