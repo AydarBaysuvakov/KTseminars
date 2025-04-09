@@ -3,15 +3,18 @@
 Model::Model() {
     add_rabbit();
     add_rabbit();
-    add_rabbit();
 }
 
 void Model::update() {
     if (game_over) return;
 
     for (int i = 0; i < snakes.size(); i++) {
-        game_over |= snakes[i].move(rabbits, snakes);
+        if (snakes[i].move(rabbits, snakes)) {
+            snakes[i].get_body().clear();
+            dead_snakes++;
+        }
     }
+    if (snakes.size() == dead_snakes) game_over = 1;
 }
 
 Color convert_color(int color) {
@@ -31,6 +34,8 @@ Color convert_color(int color) {
 void Model::add_snake() {
     Snake snake(convert_color(RED + snakes.size()));
     snakes.push_back(snake);
+    add_rabbit();
+    add_rabbit();
 }
 
 Snake::Snake(Color color) : color(color) {
@@ -75,6 +80,7 @@ void Snake::set_direction(Direction newDirection) {
 }
 
 int Snake::move(std::vector <Rabbit> &rabbits, std::vector <Snake> &snakes) {
+    if (body.empty()) return 0;
     Segment head = get_head();
     Segment newHead(0, 0);
 

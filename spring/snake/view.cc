@@ -51,6 +51,7 @@ void TView::run() {
 }
 
 void TView::draw(int x, int y, char c, int color) {
+    if (x < 0 || y < 0) return;
     settxtcolor(color);
     gotoxy(x, y);
     std::cout << c << std::flush;
@@ -157,6 +158,7 @@ void GView::run() {
                 int color = snake.get_color();
                 for (auto body: snake.get_body())
                     draw(body.get_x(), body.get_y(), 'c', color);
+                draw(snake.get_head().get_x(), snake.get_head().get_y(), 's', WHITE);
             }
 
             usleep(PERIOD);
@@ -211,6 +213,13 @@ void GView::draw(int x, int y, char c, int color) {
             rectangle.setFillColor(convert_color(color));
             rectangle.setPosition(x * BLOCK_SIZE, y * BLOCK_SIZE);
             window.draw(rectangle);
+            return;
+        }
+        case 's': {
+            sf::CircleShape circle(BLOCK_SIZE / 4);
+            circle.setFillColor(convert_color(color));
+            circle.setPosition(x * BLOCK_SIZE + BLOCK_SIZE / 4, y * BLOCK_SIZE + BLOCK_SIZE / 4);
+            window.draw(circle);
             return;
         }
         default: return;

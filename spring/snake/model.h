@@ -33,19 +33,20 @@ public:
     int  get_color()   { return color; };
     void set_direction(Direction newDirection);
 
-    std::vector <Segment> get_body() { return body; }
-    Segment get_head() { return body.front(); }
-    Segment get_tail() { return body.back(); }
+    std::vector <Segment> &get_body() { return body; }
+    Segment get_head() { if (body.empty()) return Segment(-1, -1) ; return body.front(); }
+    Segment get_tail() { if (body.empty()) return Segment(-1, -1) ; return body.back(); }
 };
 
 
 class Model {
     int game_over = 0;
+    int dead_snakes = 0;
 
     std::vector <Snake>  snakes;
     std::vector <Rabbit> rabbits;
 
-    public:
+public:
     Model();
     void update(); 
 
